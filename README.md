@@ -1,97 +1,97 @@
- discord
+discord
 from discord.ext import commands
 from flask import Flask
 from threading import Thread
 
-# -----------------------
+# -------------------------
 # INTENTS
 intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# -----------------------
-# TÁBLA CSATORNA ID
-TABLA_CSATORNA_ID = 1500186859832086729
+# ------------------------
+# TABLE CHANNEL ID
+TABLE_CHANNEL_ID = 1500186859832086729
 import
-# ADATOK
-adatok = {}
-tabla_uzenet = None
+# DATA
+data = {}
+table_message = None
 
-# -----------------------
+# ------------------------
 @bot.event
 async def on_ready():
-    global tabla_uzenet
-    print("BOT ONLINE:", bot.user)
+global table_message
+print("BOT ONLINE:", bot.user)
 
-    channel = bot.get_channel(TABLA_CSATORNA_ID)
-    if channel:
-        tabla_uzenet = await channel.send("📊 TÁBLA BETÖLTÉS...")
-        await frissit_tabla()
+channel = bot.get_channel(TABLE_CHANNEL_ID)
+if channel:
+table_message = await channel.send("📊 TABLE LOADING...")
+wait refresh_table()
 
-# -----------------------
-# 📊 TÁBLA FRISSÍTÉS
-async def frissit_tabla():
-    global tabla_uzenet
+# ------------------------
+# 📊 TABLE UPDATE
+async def refresh_table():
+global table_message
 
-    if not tabla_uzenet:
-        return
+if not table_message:
+return
 
-    if not adatok:
-        szoveg = "📊 ALKATRÉSZ TÁBLA\n\nNincs adat"
-    else:
-        szoveg = "📊 ALKATRÉSZ TÁBLA\n\n"
-        for nev, menny in adatok.items():
-            szoveg += f"{nev} - {menny} alkatrész\n"
+if not data:
+text = "📊 PARTS TABLE\n\nNo data"
+else:
+text = "📊 PARTS TABLE\n\n"
+name, quantity data.items():
+text += f"{name} - {quantity} parts\n"
 
-    await tabla_uzenet.edit(content=szoveg)
+wait for table_message.edit(content=text)
 
-# -----------------------
-# ➕ HOZZÁADÁS
+# ------------------------
+# ➕ ADD
 @bot.command()
 @commands.has_permissions(administrator=True)
-async def add(ctx, member: discord.Member, mennyiseg: int):
-    nev = member.display_name
-    adatok[nev] = adatok.get(nev, 0) + mennyiseg
-    await frissit_tabla()
+async def add(ctx, member: discord.Member, quantity: int):
+name = member.display_name
+data[name] = data.get(name, 0) + quantity
+wait refresh_table()
 
-# -----------------------
-# ❌ 1 EMBER TELJES TÖRLÉSE
+# ------------------------
+# ❌ 1 PERSON FULL DELETE
 @bot.command()
 @commands.has_permissions(administrator=True)
-async def remove(ctx, member: discord.Member):
-    nev = member.display_name
-    if nev in adatok:
-        del adatok[nev]
-    await frissit_tabla()
+async def remove(ctx, tag: discord.Member):
+name = tag.display_name
+if name in data:
+del data[name]
+wait refresh_table()
 
-# -----------------------
-# 🧹 MINDEN NULLÁZÁSA
+# ------------------------
+# 🧹 RESET ALL
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def clear(ctx):
-    for nev in adatok:
-        adatok[nev] = 0
-    await frissit_tabla()
+if name in data:
+data[name] = 0
+wait refresh_table()
 
-# -----------------------
-# ❌ HIBA KEZELÉS
+# ------------------------
+# ❌ ERROR HANDLING
 @add.error
 @remove.error
 @clear.error
 async def error_handler(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.send("❌ csak admin használhatja!")
+if isinstance(error, commands.MissingPermissions):
+await ctx.send("❌ Only admin can use it!")
 
-# -----------------------
-# 🔹 Keep-alive Flask (ingyenes hostokhoz)
+# ------------------------
+# 🔹 Keep-alive Flask (for free hosts)
 app = Flask("")
 
 @app.route("/")
 def home():
-    return "Bot fut"
+return "Bot is running"
 
 def run():
-    app.run(host="0.0.0.0", port=3000)
+app.run(host="0.0.0.0", port=3000)
 
 Thread(target=run).start()
